@@ -35,21 +35,25 @@ def synchroBDD(userID):
 
     userID = str(userID)
 
-
+    #-------------------------------------------------------------------------------------------------------------
     #For User
     cursorDebian.execute("select * from rm_user where us_id = %s ;", userID)
     # Fetch all row.
     data = cursorDebian.fetchall()
     #Add to local bdd
-    print(data[0][0])
-    id = 598
+    print(data[0][7])
+    for i in data[0]:
+        print (i)
 
+
+    """
     cursorLocal.execute("insert into rm_user (us_id, us_lastname, us_firstname, us_mail, us_mdp, us_prefbreakfast, "
                         "us_preflunch, us_prefdinner, us_prefbedtime) "
                         "values (" + str(data[0][0]) + "," + str(data[0][1]) + "," + str(data[0][2]) + ","
                         + str(data[0][3]) + "," + str(data[0][4]) + "," + str(data[0][5]) + ","
                         + str(data[0][6]) + "," + str(data[0][7]) + "," + str(data[0][8]) + ");")
-    dbLocal.commit()
+    dbLocal.commit()"""
+    # -------------------------------------------------------------------------------------------------------------
 
 
     """
