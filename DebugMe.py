@@ -1,43 +1,19 @@
-import MySQLdb
-import csv
-import os
+import requests
 
-dbDebian = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmedsTest")
-cursorDebian = dbDebian.cursor()
+user = 19
 
-# For User
-cursorDebian.execute("select * from rm_user where us_id = 2 ;")
-# Fetch all row.
-data = cursorDebian.fetchall()
-print("retrieve data")
+r = requests.get("http://212.73.217.202:15020/raspberry/get_user/"+str(user))
+result = r.json()
+data = result["user"][0]
+#print(data["user_id"])
+
+
+
+print("result")
+print(result)
+print("\n")
+print("data")
 print(data)
+print("\n")
 
-
-#-------------------------------------------------------
-print("create and open doc")
-file = open("fichier.csv", "wb")
-
-
-print("write in file")
-writer = csv.writer(file)
-
-print("write data in file")
-writer.writerow(data[0])
-
-file.close()
-
-print("delete csv")
-#os.remove("fichier.csv")
-
-
-print("open doc")
-file = open("fichier.csv", "rb")
-
-print("use the csv to fuck")
-reader = csv.DictReader(file)
-
-print(reader)
-
-for row in reader:
-    print(row)
-
+print(result["user"][0])

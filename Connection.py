@@ -1,23 +1,9 @@
 import MySQLdb
 import datetime
+import requests
 
 
-# Connexion locale
-def conLocal():
-    dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
-    cursor = dbLocal.cursor()
-
-    return "testLocal"
-
-
-def conDebian():
-    dbDebian = MySQLdb.connect("http://212.73.217.202:10080/", "root", "azerty", "remmeds_users")
-    cursor = dbDebian.cursor()
-
-    return "testDebian";
-
-
-def addToBDD(cursorDebian, userID, cursorLocal, dbLocal, table):
+def addhisto(cursorDebian, userID, cursorLocal, dbLocal, table):
     cursorDebian.execute("select * from "+table+" where us_id = "+userID+" ;")
     # Fetch all row.
     data = cursorDebian.fetchall()
@@ -35,6 +21,10 @@ def checkIfExists(id, table, name):
 
     cursor.execute("select * from " + table + " where " + name + " = " + str(id))
     data = cursor.fetchone()
+
+    #print(data)
+    #print("\n\n")
+
     if(data):
         #print("False")
         return False
@@ -44,8 +34,6 @@ def checkIfExists(id, table, name):
 
 
 def synchroBDD(userID):
-    dbDebian = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmedsTest")
-    cursorDebian = dbDebian.cursor()
     dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
     cursorLocal = dbLocal.cursor()
 
@@ -53,156 +41,40 @@ def synchroBDD(userID):
 
     #-------------------------------------------------------------------------------------------------------------
     #For User
-    cursorDebian.execute("select * from rm_user where us_id = " + userID)
-    # Fetch all row.
-    data = cursorDebian.fetchone()
-    #Add to local bdd
 
-    if(checkIfExists(data[0], "rm_user", "us_id")):
-        liste = []
-        for i in data:
-            #print (i)
-            if(i != None):
-                liste.append(str(i))
-            else:
-                liste.append("")
-        #print("\n\n")
-        #print(data[0])
-        #print("\n\n")
-        #print(liste)
+    # Fetch all row from user.
+    r = requests.get("http://212.73.217.202:15020/raspberry/get_user/" + str(userID))
+    result = r.json()
+    data = result["user"][0]
+    print(data)
+    print(data["user_id"])
+    print("\n")
 
-        cursorLocal.execute("""insert into rm_user (us_id, us_lastname, us_firstname, us_mail, us_mdp, us_prefbreakfast,
-                            us_preflunch, us_prefdinner, us_prefbedtime)
-                            values (%s, %s, %s, %s, %s, %s, %s, %s, %s);""", liste)
-        dbLocal.commit()
-
-    # -------------------------------------------------------------------------------------------------------------
-    #For compartment
-    cursorDebian.execute("select * from rm_compartment where us_id = " + userID)
-    # Fetch all row.
-    data = cursorDebian.fetchall()
-    #Add to local bdd
-    #print(data)
-
+    #if(checkIfExists(data["user_id"], "rm_user", "us_id")):
     liste = []
-    for row in data:
-        if (checkIfExists(row[0], "rm_compartment", "com_id")):
-            #print(row[0])
-            for i in row:
-                if(i != None):
-                    #print(i)
-                    liste.append(i)
-                else:
-                    liste.append("")
-            #print("\n\n")
-            #print(row)
-            #print("\n\n")
-            #print(liste)
-            #print("\n\n\n\n")
+    for i in data:
+        #print (i)
+        if(i != None):
+            liste.append(str(i))
+        else:
+            liste.append("")
+    #print("\n\n")
+    #print(data[0])
+    #print("\n\n")
+    #print(liste)
 
-            cursorLocal.execute("""insert into rm_compartment (com_id, us_id, com_num, com_name, com_note, com_durationnumb,
-                                com_durationtext, com_personalized, com_freqyencyeveryint, com_frequencyeverystr,
-                                com_days)
-                                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", liste)
-            dbLocal.commit()
+    data = str(data["user_id"])+","+str(data["lastname"])+","+str(data["firstname"])+","+str(data["mail"])+"," \
+                ""+str(data["pref_breakfast"])+","+str(data["pref_lunch"])+","+str(data["pref_dinner"])+","+str(data["pref_bedtime"])+");"
+    print(data)
 
-            liste = []
+    cursorLocal.execute("""insert into rm_user (us_id, us_lastname, us_firstname, us_mail, us_prefbreakfast,
+                        us_preflunch, us_prefdinner, us_prefbedtime)
+                        values (%s, %s, %s, %s, %s, %s, %s, %s);""", data)
+    dbLocal.commit()
 
     # -------------------------------------------------------------------------------------------------------------
-    #For comp_preset
-    cursorDebian.execute("select * from rm_compartment where us_id = " + userID)
-    # Fetch all row.
-    data = cursorDebian.fetchall()
 
-    #For each compartment
-    for x in data:
-        id = x[0]
-        cursorDebian.execute("select * from rm_comp_preset where com_id = " + str(id))
-        # Fetch all row.
-        dt = cursorDebian.fetchall()
-        # Add to local bdd
-        #print(dt)
 
-        liste = []
-        for row in dt:
-            #print("id ----> ")
-            #print(row)
-            #print(row[0])
-            if (checkIfExists(row[0], "rm_comp_preset", "cpe_id")):
-                for i in row:
-                    if (i != None):
-                        #print(i)
-                        liste.append(i)
-                    else:
-                        liste.append("")
-                #print("\n\n")
-                #print(row)
-                #print("\n\n")
-                #print(liste)
-                #print("\n\n\n\n")
-
-                cursorLocal.execute("""insert into rm_comp_preset (cpe_id, com_id, cpe_meal, cpe_hour, cpe_mealWhen)
-                                    values (%s, %s, %s, %s, %s);""", liste)
-                dbLocal.commit()
-
-                liste = []
-
-    # -------------------------------------------------------------------------------------------------------------
-    #For Repertory
-    cursorDebian.execute("select * from rm_repertory where us_id = " + userID)
-    # Fetch all row.
-    data = cursorDebian.fetchall()
-    #Add to local bdd
-    #print(data)
-
-    liste = []
-    for row in data:
-        if (checkIfExists(row[0], "rm_repertory", "re_id")):
-            for i in row:
-                if(i != None):
-                    #print(i)
-                    liste.append(i)
-                else:
-                    liste.append("")
-            #print("\n\n")
-            #print(row)
-            #print("\n\n")
-            #print(liste)
-            #print("\n\n\n\n")
-
-            cursorLocal.execute("""insert into rm_repertory (re_id, us_id, re_lastname, re_firstname, re_phonenumber,
-                               re_mail, re_chxSMS, re_chxMail, re_note)
-                               values (%s, %s, %s, %s, %s, %s, %s, %s, %s);""", liste)
-            dbLocal.commit()
-
-            liste = []
-    # -------------------------------------------------------------------------------------------------------------
-    #For Connect
-    cursorDebian.execute("select * from rm_connect where us_id = " + userID)
-    # Fetch all row.
-    data = cursorDebian.fetchall()
-    #Add to local bdd
-    #print(data)
-
-    liste = []
-    for row in data:
-        for i in row:
-            if(i != None):
-                #print(i)
-                liste.append(i)
-            else:
-                liste.append("")
-        #print("\n\n")
-        #print(row)
-        #print("\n\n")
-        #print(liste)
-        #print("\n\n\n\n")
-
-        cursorLocal.execute("""insert into rm_connect (con_id, us_id, con_ssid, con_mdp)
-                           values (%s, %s, %s, %s);""", liste)
-        dbLocal.commit()
-
-        liste = []
     # -------------------------------------------------------------------------------------------------------------
 
     return "Synchro";
@@ -254,6 +126,6 @@ def checkHour(numComp):
 
 #print(resetBDD())
 
-print(synchroBDD(788))
+print(synchroBDD(18))
 
 
