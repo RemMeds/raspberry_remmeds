@@ -1,0 +1,7 @@
+
+
+network={
+	ssid=op3t
+	psk=oppswd
+	key_mgmt=WPA-PSK
+}

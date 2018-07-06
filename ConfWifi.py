@@ -1,8 +1,11 @@
 import os
 
-os.system("sudo iwconfig wlan0 essid smurf key s:smurf1234")
-# Par dÃ©faut iwconfig utilise une clÃ© hexadÃ©cimal.
-# Si vous souhaitez utiliser une clÃ© ascii vous devrez ajouter le prÃ©fixe â€œs:â€ Ã  la clÃ©
+def conf_wifi(ssid, mdp):
 
+    wpa = open("/etc/wpa_supplicant/wpa_supplicant.conf", "a")
 
-# avoir les droits de super utilisateur
+    wifi = "\n\nnetwork={\n\tssid="+ssid+"\n\tpsk="+mdp+"\n\tkey_mgmt=WPA-PSK\n}"
+
+    wpa.write(wifi)
+
+    os.system("service networking restart")

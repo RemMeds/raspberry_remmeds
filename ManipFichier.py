@@ -1,19 +1,10 @@
-import os
+import ConfWifi
 
-"""
-# Ouverture du fichier contanant le texte
-file = open("conf.txt", "r")
-conf = file.read()
+with open("/remmeds/synchro_phone.json", "r") as file:
+    conf = file.readlines()
 
-print(conf)
-
-file.close()"""
-
-with open("conf.txt", "r") as file :
-    conf = file.read()
-
-print (conf)
-
+ssid = conf[0]
+mdp = conf[1]
+userID = conf[2]
 file.close()
-
-#os.remove("File Path") #pour supprimer un fichier
+ConfWifi.conf_wifi(ssid, mdp)
