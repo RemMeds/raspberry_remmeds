@@ -1,19 +1,8 @@
-import requests
+import socket
 
-user = 19
-
-r = requests.get("http://212.73.217.202:15020/raspberry/get_user/"+str(user))
-result = r.json()
-data = result["user"][0]
-#print(data["user_id"])
-
-
-
-print("result")
-print(result)
-print("\n")
-print("data")
-print(data)
-print("\n")
-
-print(result["user"][0])
+try:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("www.google.com", 80))
+    print("connecte")
+except socket.gaierror:
+    print("Pas connecte")
