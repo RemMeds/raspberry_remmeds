@@ -1,8 +1,10 @@
-import socket
+import datetime
 
-try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(("www.google.com", 80))
-    print("connecte")
-except socket.gaierror:
-    print("Pas connecte")
+date = datetime.datetime.now()
+print(str(date.hour)+":"+str(date.minute)+"->"+str(date.day)+"->"+str(date.month)+"->"+str(date.year))
+
+time = datetime.time()
+print(time)
+
+jour = date.today()
+print(jour)

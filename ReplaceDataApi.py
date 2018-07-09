@@ -1,8 +1,8 @@
 
 
-def replace(str, table):
+def replace(str, data):
     #User
-    if(table == "rm_user"):
+    if(data == "rm_user"):
         if str == "user_id":
             return "us_id"
         elif str == "pref_bedtime":
@@ -23,7 +23,7 @@ def replace(str, table):
             return "us_mdp"
 
     #rm_repertory
-    if(table == "rm_repertory"):
+    if(data == "rm_repertory"):
         if str == "note":
             return "re_note"
         elif str == "phonenumber":
@@ -42,7 +42,7 @@ def replace(str, table):
             return "re_id"
 
     #rm_compartment
-    if(table == "rm_compartment"):
+    if(data == "rm_compartment"):
         if str == "duration_number":
             return "com_durationnumb"
         elif str == "check_perso_hour":
@@ -67,3 +67,27 @@ def replace(str, table):
             return "com_days"
         elif str == "note":
             return "com_note"
+
+    if(data == "num"):
+        if str == "0":
+            return "00"
+        elif str == "1":
+            return "01"
+        elif str == "2":
+            return "02"
+        elif str == "3":
+            return "03"
+        elif str == "4":
+            return "04"
+        elif str == "5":
+            return "05"
+        elif str == "6":
+            return "06"
+        elif str == "7":
+            return "07"
+        elif str == "8":
+            return "08"
+        elif str == "9":
+            return "09"
+        else:
+            return str

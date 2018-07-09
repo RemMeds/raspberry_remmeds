@@ -3,6 +3,7 @@ import datetime
 import requests
 import ReplaceDataApi
 import socket #test internet connection
+import datetime
 
 #list = map(key, value)
 def addhisto(data, userID):
@@ -254,6 +255,7 @@ def resetBDD():
     dbLocal.close()
     return "RESET";
 
+
 def checkHour(numComp):
     date = datetime.datetime.now()
     hour = str(date.hour) # + ":" + str(date.minute)
@@ -286,6 +288,30 @@ def checkHour(numComp):
         return False
 
 
+
+def checkComp():
+    map = {}
+    for numComp in range(1,9):
+        dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+        cursor = dbLocal.cursor()
+
+        cursor.execute("select com_hour from rm_compartment where com_num = " + str(numComp))
+        comHour = cursor.fetchone()
+        comHour = comHour[0]
+
+        time = datetime.datetime.now()
+        date = str(time.hour) + ":" + str(ReplaceDataApi.replace(str(time.minute), "num"))
+
+        if(date == comHour):
+            map["Hour"] = date
+            map["Comp"] = numComp
+            return map
+
+
+
+
+
+
 #print(resetBDD())
 
 #print(synchroBDD(1))
@@ -304,3 +330,5 @@ liste1["hi_day"] = "lundi"
 
 print(addhisto(liste1, 1))
 """
+
+checkComp()

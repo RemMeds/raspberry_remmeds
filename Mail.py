@@ -1,25 +1,29 @@
+#!/usr/bin/python
+# coding=utf-8
+
 # import necessary packages
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+import MySQLdb
 
-def mail():
+def mail(message, subject, To):
     # create message object instance
     msg = MIMEMultipart()
 
-    message = "Bonjour Monsieur/Madame X, \n\n" \
-              "Je me dois de vous prévenir que vous n'avez pas pris le bon médicament. \n" \
-              "Je ne suis pas sur que le fait de prendre une deuxieme fois le médicament pour la tension \n" \
-              "en moins de deux heures soit une bonne idée...\n" \
-              "Bon courage pour la suite :)\n\n" \
-              "Bien cordialement, \n" \
-              "Ton pilulier\n"  #le corps du message
+#    message = "Bonjour Monsieur/Madame X, \n\n" \
+#              "Je me dois de vous prevenir que vous n'avez pas pris le bon medicament. \n" \
+#              "Je ne suis pas sur que le fait de prendre une deuxieme fois le medicament pour la tension \n" \
+#              "en moins de deux heures soit une bonne idee...\n" \
+#              "Bon courage pour la suite :)\n\n" \
+#              "Bien cordialement, \n" \
+#              "Ton pilulier\n"  #le corps du message
 
     # setup the parameters of the message
     password = "@azerty$"
     msg['From'] = "RemMeds@outlook.fr"
-    msg['To'] = "koceila.haddouch@edu.itescia.fr"
-    msg['Subject'] = "Rappel !" # L'objet du mail
+    msg['To'] = str(To)
+    msg['Subject'] = str(subject) # L'objet du mail
 
     # add in the message body
     msg.attach(MIMEText(message, 'plain'))
@@ -38,3 +42,105 @@ def mail():
     server.quit()
 
     print ("successfully sent email to %s:" % (msg['To']))
+
+
+
+def infos(list):
+    dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+    cursor = dbLocal.cursor()
+
+    cursor.execute("select com_name from rm_compartment where com_num = " + str(list["Comp"]))
+    drugName = cursor.fetchone()
+
+    cursor.execute("select us_firstname, us_mail from rm_user")
+    userData = cursor.fetchone()
+    userName = userData[0]
+    userMail = userData[1]
+
+    message = "Bonjour "+str(userName)+", \n\n" \
+              "Il est "+str(list["Hour"])+" et vous devez prendre le médicament "+str(drugName[0])+" \n" \
+              "qui est dans le compartiment "+list["Comp"]+" \n"
+    #le corps du message
+
+    mail(message, "Rappel", userMail)
+
+
+def alertMissing(list):
+    dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+    cursor = dbLocal.cursor()
+
+    cursor.execute("select com_name from rm_compartment where com_num = " + str(list["Comp"]))
+    drugName = cursor.fetchone()
+
+    #For the user
+    cursor.execute("select us_firstname, us_mail from rm_user")
+    userData = cursor.fetchone()
+    userName = userData[0]
+    userMail = userData[1]
+
+    message = "Bonjour "+str(userName)+", \n\n" \
+              "Vous avez oublié de prendre le médicament "+str(drugName[0])+". Il est dans le compartiment "+list["Comp"]+"" \
+              "Vous deviez le prendre à "+str(list["Hour"])
+    #le corps du message pour l'utilisateur.
+
+    mail(message, "Alerte ! Médicament oublié", userMail)
+
+    #For contacts
+    cursor.execute("select re_firstname, re_mail from rm_repertory")
+    data = cursor.fetchall()
+    for row in data:
+        reName = row[0]
+        reMail = row[1]
+
+        print(reName)
+        print(reMail)
+
+        message = "Bonjour "+str(reName)+", \n\n" \
+                  ""+str(userName)+" à oublié de prendre le médicament "+str(drugName[0])+" qu'il devait prendre à "+str(list["Hour"])
+        #le corps du message pour l'utilisateur.
+
+        mail(message, "Alerte ! Médicament oublié", reMail)
+
+
+def alertOpenning(list):
+    dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+    cursor = dbLocal.cursor()
+
+    cursor.execute("select com_name from rm_compartment where com_num = " + str(list["Comp"]))
+    drugName = cursor.fetchone()
+
+    #For the user
+    cursor.execute("select us_firstname, us_mail from rm_user")
+    userData = cursor.fetchone()
+    userName = userData[0]
+    userMail = userData[1]
+
+    message = "Bonjour "+str(userName)+", \n\n" \
+              "Vous avez ouvert le compartiment "+list["Comp"]+" qui contenait du "+str(drugName[0])+". " \
+              "Vous ne devriez pas en consommer hors des heures de prises conseillées par le médecin."
+
+
+    #le corps du message pour l'utilisateur.
+
+    mail(message, "Alerte ! Compartiement ouvert", userMail)
+
+    #For contacts
+    cursor.execute("select re_firstname, re_mail from rm_repertory")
+    data = cursor.fetchall()
+    for row in data:
+        reName = row[0]
+        reMail = row[1]
+
+        message = "Bonjour "+str(reName)+", \n\n" \
+                  ""+str(userName)+" à ouvert le compartiment "+list["Comp"]+" qui contenait du "+str(drugName[0])+" " \
+                  "en dehors des heures de prises conseillées par le médecin."
+        #le corps du message pour l'utilisateur.
+
+        mail(message, "Alerte ! Médicament oublié", reMail)
+
+list = {}
+list["Hour"] = "18:20"
+list["Comp"] = "6"
+
+#infos(list)
+#alertOpenning(list)
