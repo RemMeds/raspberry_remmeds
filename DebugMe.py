@@ -1,19 +1,10 @@
-import requests
+import datetime
 
-user = 19
+date = datetime.datetime.now()
+print(str(date.hour)+":"+str(date.minute)+"->"+str(date.day)+"->"+str(date.month)+"->"+str(date.year))
 
-r = requests.get("http://212.73.217.202:15020/raspberry/get_user/"+str(user))
-result = r.json()
-data = result["user"][0]
-#print(data["user_id"])
+time = datetime.time()
+print(time)
 
-
-
-print("result")
-print(result)
-print("\n")
-print("data")
-print(data)
-print("\n")
-
-print(result["user"][0])
+jour = date.today()
+print(jour)
