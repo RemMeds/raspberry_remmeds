@@ -1,10 +1,22 @@
+import os
 import datetime
 
-date = datetime.datetime.now()
-print(str(date.hour)+":"+str(date.minute)+"->"+str(date.day)+"->"+str(date.month)+"->"+str(date.year))
 
-time = datetime.time()
-print(time)
 
-jour = date.today()
-print(jour)
+
+#numComp = "1"
+#os.environ["comp"+numComp] = "False"
+#os.system("export COMP = False")
+
+data = os.getenv("COMP1")#["COMP1"]
+
+print(data)
+
+#os.environ["COMP1"]="True"
+os.environ["COMP1"]="True"
+#os.system("export COMP1=True")
+
+data = os.getenv("COMP1")
+
+print(data)
+

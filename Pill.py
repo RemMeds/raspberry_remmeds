@@ -5,47 +5,119 @@
 import RPi.GPIO as GPIO
 import time
 import Connection
+import ReplaceData
+import Mail
 
-GPIO.setmode(GPIO.BCM)
+import os
+"""
+Déclaration de la variable d'environnement
+"""
+#Variable global
+params = {}
 
-# La broche d'entree du capteur est declaree. En outre la resistance de Pull-up est activee.
-GPIO_PIN = 21  # Senseur Hall branche sur GPIO 21
-GPIO_PIN2 = 20  # Senseur Hall branche sur GPIO 21
-GPIO.setup(GPIO_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(GPIO_PIN2, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-print("Sensor-Test [Appuyez sur Ctrl + C pour terminer le test]")
+"""
+Etat d'une pin 
+state = GPIO.input(pin)
+
+sources : https://www.raspberrypi.org/forums/viewtopic.php?t=38753
+"""
+
+def ledOn(map):
+
+    print("LEDON")
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+
+    #hour = map["Hour"]
+    comp = map["Comp"]
+    pin = ReplaceData.comToPin(str(comp))
+    pin = int(pin)
+
+    #active led light for an hour
+    GPIO.setup(pin, GPIO.OUT)
+    #print("LED on")
+    GPIO.output(pin, GPIO.LOW)
+    time.sleep(10)  #1800 Timer 30 minutes In seconds
+    #Une fois la demi heure passé, on vérifie l'état de la  ariable params.
+    if(params[str(map["Comp"])] == True):
+        Mail.alertMissing(map)
+
+    ###########
+    #print(map)
+    ledOff(map)
+    ###########
+    """
+    if (params[str(map["Comp"])]):
+        print("Mail Alerte Missing + led off")
+        Mail.alertMissing(map)
+        ledOff(map)
+    """
+
+def ledOff(map):
+    print("LEDOFF")
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+
+    print(params)
+    comp = map["Comp"]
+    pin = ReplaceData.comToPin(str(comp))
+    pin = int(pin)
+    params[str(map["Comp"])] = False
+    print(params)
+
+    GPIO.setup(pin, GPIO.OUT)
+    #print("LED off")
+    GPIO.output(pin, GPIO.HIGH)
+
+
+def led(map):
+    #print(map)
+    print("LED")
+    if(map["call"] == "Main"):
+        #print(str(map["Comp"]))
+        params[str(map["Comp"])] = True
+        ledOn(map)
+
+    else:
+        #print("check")
+        if(params[map["Comp"]]):
+            #print("ledOff(map)")
+            pass
+        else:
+            #print("Mail.alertOpenning(map)")
+            pass
+
+
 
 def check(numCom):
+    #Récupérer l'heure + le jour
     if(Connection.checkHour(numCom)):
         print("Add to Historique")
     else:
-        print("Mail")
+        Mail.alertOpenning(numCom)
 
 
-# Cette fonction de sortie est executee par detection du signal
-def fonctionDeSortie(null):
-    print("Signal détecté capteur 1")
-    check(1)
+
+"""
+list = {}
+list["Hour"] = "20:26"
+list["Comp"] = "1"
+list["call"] = "Main"
+
+params[list["Comp"]] = True
 
 
-# Cette fonction de sortie est executee par detection du signal
-def fonctionDeSortie2(null):
-    print("Signal détecté capteur 2")
-    check(2)
+ledOn(list)
+"""
 
-# Lors de la detection d'un signal (front descendant du signal) de la fonction de sortie est declenchee
-GPIO.add_event_detect(GPIO_PIN, GPIO.RISING, callback=fonctionDeSortie, bouncetime=100)
-GPIO.add_event_detect(GPIO_PIN2, GPIO.RISING, callback=fonctionDeSortie2, bouncetime=100)
-
-
-# Boucle de programme principale
-try:
-    while True:
-        time.sleep(0.1)
-
-# reinitialisation de tous les GPIO en entrees
-except KeyboardInterrupt:
-    GPIO.cleanup()
+"""
+#LEDOFF
+list = {}
+list["Comp"] = "1"
+ledOff(list)
 
 
+list["Comp"] = "2"
+ledOff(list)
+"""

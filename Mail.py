@@ -59,13 +59,14 @@ def infos(list):
 
     message = "Bonjour "+str(userName)+", \n\n" \
               "Il est "+str(list["Hour"])+" et vous devez prendre le médicament "+str(drugName[0])+" \n" \
-              "qui est dans le compartiment "+list["Comp"]+" \n"
+              "qui est dans le compartiment "+str(list["Comp"])+" \n"
     #le corps du message
 
     mail(message, "Rappel", userMail)
 
 
 def alertMissing(list):
+    print(list)
     dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
     cursor = dbLocal.cursor()
 
@@ -79,7 +80,7 @@ def alertMissing(list):
     userMail = userData[1]
 
     message = "Bonjour "+str(userName)+", \n\n" \
-              "Vous avez oublié de prendre le médicament "+str(drugName[0])+". Il est dans le compartiment "+list["Comp"]+"" \
+              "Vous avez oublié de prendre le médicament "+str(drugName[0])+". Il est dans le compartiment "+str(list["Comp"])+"" \
               "Vous deviez le prendre à "+str(list["Hour"])
     #le corps du message pour l'utilisateur.
 
@@ -137,10 +138,3 @@ def alertOpenning(list):
         #le corps du message pour l'utilisateur.
 
         mail(message, "Alerte ! Médicament oublié", reMail)
-
-list = {}
-list["Hour"] = "18:20"
-list["Comp"] = "6"
-
-#infos(list)
-#alertOpenning(list)

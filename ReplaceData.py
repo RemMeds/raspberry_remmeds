@@ -91,3 +91,40 @@ def replace(str, data):
             return "09"
         else:
             return str
+
+def comToPin(comp):
+    if comp == "1":
+        return "18"
+    if comp == "2":
+        return "23"
+    if comp == "3":
+        return ""
+    if comp == "4":
+        return ""
+    if comp == "5":
+        return ""
+    if comp == "6":
+        return ""
+    if comp == "7":
+        return ""
+    if comp == "8":
+        return ""
+
+def environ(num):
+    pass
+
+def days(day):
+    if day == "0":
+        return "Lundi"
+    elif day == "1":
+        return "Mardi"
+    elif day == "2":
+        return "Mercredi"
+    elif day == "3":
+        return "Jeudi"
+    elif day == "4":
+        return "Vendredi"
+    elif day == "5":
+        return "Samedi"
+    elif day == "6":
+        return "Dimanche"
