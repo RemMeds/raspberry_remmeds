@@ -302,11 +302,18 @@ def checkHour(numComp):
 
 
 def checkComp():
+    print("CheckComp")
+    print("------------------------------------------")
+
     map = {}
     result = False
     for numComp in range(1,9):
         dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
         cursor = dbLocal.cursor()
+        print("------------------------------------------")
+        print("Numero du compartiment")
+        print(numComp)
+
 
         #Récupérer le jour de la semaine.
         day = ReplaceData.days(str(datetime.datetime.today().weekday()))
@@ -314,14 +321,25 @@ def checkComp():
         #Récuéprer tous les jours ou l'utilisateur devra prendre le médicament du compartiement i
         cursor.execute("select com_days from rm_compartment where com_num = " + str(numComp))
         comDays = cursor.fetchone()
-        if(comDays):
+
+        print("Tous les jours de la semaine")
+        print(comDays)
+        print("Du compartiment")
+        print(numComp)
+
+        if(comDays): #Or '0' ?
             comDays = comDays[0]
+            print("ELIF")
             print(comDays)
-            list = comDays.split(",")
-            for i in list:
-                if(str(i) == day):
-                    print("OK")
-                    result = True
+            if(comDays == "0" or comDays == ""):
+                print("It must be True")
+                result = True
+            else:
+                list = comDays.split(",")
+                for i in list:
+                    if(str(i) == day):
+                        print("OK")
+                        result = True
         else:
             result = True
 
