@@ -26,31 +26,33 @@ def fonctionDeSortie(null):
 
     time = datetime.datetime.now()
     minute = str(time.minute)
-    if (minute == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]):
-        minute = ReplaceData.replace(minute, "num")
+    minute = ReplaceData.replace(minute, "num")
     hour = str(time.hour) + ":" + minute
 
     list = {}
     list["Hour"] = hour
     list["Comp"] = "1"
-    #Pill.led(list)
+    list["call"] = ""
+    Pill.led(list)
+
 
 
 # Cette fonction de sortie est executee par detection du signal
 def fonctionDeSortie2(null):
     print("Signal détecté capteur 2")
     os.system("wall capteur2")
+
     time = datetime.datetime.now()
     minute = str(time.minute)
-    if (minute == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]):
-        minute = ReplaceData.replace(minute, "num")
+    minute = ReplaceData.replace(minute, "num")
     hour = str(time.hour) + ":" + minute
 
     list = {}
     list["Hour"] = hour
-    list["Comp"] = "1"
-    #Pill.led(list)
-    Pill.ledOff(list)
+    list["Comp"] = "2"
+    list["call"] = ""
+    Pill.led(list)
+
 
 # Lors de la detection d'un signal (front descendant du signal) de la fonction de sortie est declenchee
 GPIO.add_event_detect(GPIO_PIN, GPIO.RISING, callback=fonctionDeSortie, bouncetime=100)

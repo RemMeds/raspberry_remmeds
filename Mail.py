@@ -11,14 +11,6 @@ def mail(message, subject, To):
     # create message object instance
     msg = MIMEMultipart()
 
-#    message = "Bonjour Monsieur/Madame X, \n\n" \
-#              "Je me dois de vous prevenir que vous n'avez pas pris le bon medicament. \n" \
-#              "Je ne suis pas sur que le fait de prendre une deuxieme fois le medicament pour la tension \n" \
-#              "en moins de deux heures soit une bonne idee...\n" \
-#              "Bon courage pour la suite :)\n\n" \
-#              "Bien cordialement, \n" \
-#              "Ton pilulier\n"  #le corps du message
-
     # setup the parameters of the message
     password = "@azerty$"
     msg['From'] = "RemMeds@outlook.fr"
@@ -58,7 +50,7 @@ def infos(list):
     userMail = userData[1]
 
     message = "Bonjour "+str(userName)+", \n\n" \
-              "Il est "+str(list["Hour"])+" et vous devez prendre le médicament "+str(drugName[0])+" \n" \
+              "Il est "+str(list["Hour"])+" et vous devez prendre le medicament "+str(drugName[0])+" \n" \
               "qui est dans le compartiment "+str(list["Comp"])+" \n"
     #le corps du message
 
@@ -80,11 +72,11 @@ def alertMissing(list):
     userMail = userData[1]
 
     message = "Bonjour "+str(userName)+", \n\n" \
-              "Vous avez oublié de prendre le médicament "+str(drugName[0])+". Il est dans le compartiment "+str(list["Comp"])+"" \
+              "Vous avez oublie de prendre le medicament "+str(drugName[0])+". Il est dans le compartiment "+str(list["Comp"])+"" \
               "Vous deviez le prendre à "+str(list["Hour"])
     #le corps du message pour l'utilisateur.
 
-    mail(message, "Alerte ! Médicament oublié", userMail)
+    mail(message, "Alerte ! Medicament oublie", userMail)
 
     #For contacts
     cursor.execute("select re_firstname, re_mail from rm_repertory")
@@ -97,10 +89,10 @@ def alertMissing(list):
         print(reMail)
 
         message = "Bonjour "+str(reName)+", \n\n" \
-                  ""+str(userName)+" à oublié de prendre le médicament "+str(drugName[0])+" qu'il devait prendre à "+str(list["Hour"])
+                  ""+str(userName)+" à oublie de prendre le medicament "+str(drugName[0])+" qu'il devait prendre à "+str(list["Hour"])
         #le corps du message pour l'utilisateur.
 
-        mail(message, "Alerte ! Médicament oublié", reMail)
+        mail(message, "Alerte ! Medicament oublie", reMail)
 
 
 def alertOpenning(list):
@@ -137,4 +129,4 @@ def alertOpenning(list):
                   "en dehors des heures de prises conseillées par le médecin."
         #le corps du message pour l'utilisateur.
 
-        mail(message, "Alerte ! Médicament oublié", reMail)
+        mail(message, "Alerte ! Compartiement ouvert", reMail)

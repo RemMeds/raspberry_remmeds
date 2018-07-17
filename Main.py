@@ -14,6 +14,13 @@ date = datetime.datetime.now()
 #print(data)
 
 
+#Synchro des bdd
+userID = Connection.selectUserID() #Vérifier si il y'a un user en récupérant son id
+if(userID): #si la variable contient un id
+    #print(userID)
+    Connection.synchroBDD(userID) #La synchro se lance.
+    file.write("\nUserID -> "+str(userID)) #Log
+
 
 
 
@@ -21,12 +28,10 @@ compNum = Connection.checkComp()
 print(compNum)
 
 if(compNum):
-    Mail.infos(compNum)
-    #Allumer la led pendant une heure (si la led existe)                     #Executer un script python qui tourne en boucle.
+    Mail.infos(compNum) #TODO Retirer le commentaire
     compNum["call"] = "Main"
-    #print(compNum)
+    print("APPEL LED")
     Pill.led(compNum)
-
 minute = str(date.minute)
 
 minute = ReplaceData.replace(minute, "num")
@@ -36,12 +41,6 @@ file.write("\nlog hour " + str(date.hour)+":"+minute +" --> "+str(compNum) + " M
 
 
 
-#Synchro des bdd
-userID = Connection.selectUserID() #Vérifier si il y'a un user en récupérant son id
-if(userID): #si la variable contient un id
-    #print(userID)
-    Connection.synchroBDD(userID) #La synchro se lance.
-    file.write("\nUserID -> "+str(userID)) #Log
 
 file.close()
 

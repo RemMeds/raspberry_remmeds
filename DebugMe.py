@@ -1,22 +1,24 @@
-import os
-import datetime
+#!/usr/bin/python
+# coding=utf-8
 
+import MySQLdb
+import requests
 
+dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+cursorLocal = dbLocal.cursor()
 
+# pour chaque historique.
+cursorLocal.execute("select * from rm_historic;")
+# Fetch all row.
+data = cursorLocal.fetchall()
 
-#numComp = "1"
-#os.environ["comp"+numComp] = "False"
-#os.system("export COMP = False")
+# For each line in historic
+for row in data:
 
-data = os.getenv("COMP1")#["COMP1"]
+    print("http://212.73.217.202:15020/historic/add_historic/" + str(row[1]) + "&" + str(row[2]) + "&" + str(row[3]) + "&"
+          "" + str(row[4]) + "&" + str(row[5]) + "&" + str(row[6]) + "&" + str(row[7]) + "")
 
-print(data)
+    requests.post("http://212.73.217.202:15020/historic/add_historic/" + str(row[1]) + "&" + str(row[2]) + "&" + str(row[3]) + "&"
+                  "" + str(row[4]) + "&" + str(row[5]) + "&" + str(row[6]) + "&" + str(row[7]) + "")
 
-#os.environ["COMP1"]="True"
-os.environ["COMP1"]="True"
-#os.system("export COMP1=True")
-
-data = os.getenv("COMP1")
-
-print(data)
-
+dbLocal.close()

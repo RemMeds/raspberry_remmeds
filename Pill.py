@@ -7,13 +7,12 @@ import time
 import Connection
 import ReplaceData
 import Mail
-
+import MySQLdb
 import os
+
 """
 Déclaration de la variable d'environnement
 """
-#Variable global
-params = {}
 
 
 """
@@ -24,7 +23,7 @@ sources : https://www.raspberrypi.org/forums/viewtopic.php?t=38753
 """
 
 def ledOn(map):
-
+    print(map)
     print("LEDON")
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
@@ -34,37 +33,31 @@ def ledOn(map):
     pin = ReplaceData.comToPin(str(comp))
     pin = int(pin)
 
-    #active led light for an hour
+    #active led light for 30 minutes
     GPIO.setup(pin, GPIO.OUT)
     #print("LED on")
     GPIO.output(pin, GPIO.LOW)
-    time.sleep(10)  #1800 Timer 30 minutes In seconds
-    #Une fois la demi heure passé, on vérifie l'état de la  ariable params.
-    if(params[str(map["Comp"])] == True):
-        Mail.alertMissing(map)
+    time.sleep(30)  #1800 Timer 30 minutes In seconds
 
-    ###########
-    #print(map)
+    #Une fois la demi heure passé, on vérifie l'état de la pin.
+    state = GPIO.input(pin)
+    if(state == 0):
+        Mail.alertMissing(map) #TODO Retirer le commentaire.
+        map["hi_takenrespected"] = "0"
+        Connection.addhisto(map)
+
+
     ledOff(map)
-    ###########
-    """
-    if (params[str(map["Comp"])]):
-        print("Mail Alerte Missing + led off")
-        Mail.alertMissing(map)
-        ledOff(map)
-    """
+
 
 def ledOff(map):
     print("LEDOFF")
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
 
-    print(params)
     comp = map["Comp"]
     pin = ReplaceData.comToPin(str(comp))
     pin = int(pin)
-    params[str(map["Comp"])] = False
-    print(params)
 
     GPIO.setup(pin, GPIO.OUT)
     #print("LED off")
@@ -75,27 +68,83 @@ def led(map):
     #print(map)
     print("LED")
     if(map["call"] == "Main"):
-        #print(str(map["Comp"]))
-        params[str(map["Comp"])] = True
         ledOn(map)
 
     else:
-        #print("check")
-        if(params[map["Comp"]]):
-            #print("ledOff(map)")
-            pass
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+
+        comp = map["Comp"]
+        pin = ReplaceData.comToPin(str(comp))
+        pin = int(pin)
+
+        GPIO.setup(pin, GPIO.OUT)
+
+        state = GPIO.input(pin)
+        print(state)
+        if(state == 0):
+            ledOff(map)
+            map["hi_takenrespected"] = "1"
+            print('TRUE')
+            #retrieve timeslot
+            dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+            cursorLocal = dbLocal.cursor()
+
+            now = str(map["Hour"])
+            hour = now[0] + now[1]
+            minute = int(now[3] + now[4]) - 30
+            if (minute < 0):
+                hour = int(hour) - 1
+                minute = 60 + minute
+                after = str(hour) + ":" + str(minute)
+            else:
+                after = str(hour) + ":" + str(minute)
+
+            cursorLocal.execute(
+                "select * from rm_compartment where com_hour between '" + str(after) + "' and '" + str(now) + "';")
+            data = cursorLocal.fetchall()
+
+            if (data):
+                map["TimeSlot"] = "Perso"
+            else:
+                cursorLocal.execute(
+                    "select * from rm_user where us_prefbreakfast between '" + str(after) + "' and '" + str(now) + "'")
+                data = cursorLocal.fetchone()
+                if (data):
+                    map["TimeSlot"] = "Breakfast"
+                else:
+                    cursorLocal.execute(
+                        "select * from rm_user where us_preflunch between '" + str(after) + "' and '" + str(now) + "'")
+                    data = cursorLocal.fetchone()
+                    if (data):
+                        map["TimeSlot"] = "Lunch"
+                    else:
+                        cursorLocal.execute(
+                            "select * from rm_user where us_prefdinner between '" + str(after) + "' and '" + str(
+                                now) + "'")
+                        data = cursorLocal.fetchone()
+                        if (data):
+                            map["TimeSlot"] = "Dinner"
+                        else:
+                            cursorLocal.execute(
+                                "select * from rm_user where us_prefbedtime between '" + str(after) + "' and '" + str(
+                                    now) + "'")
+                            data = cursorLocal.fetchone()
+                            map["TimeSlot"] = "Bedtime"
+            #end retrieve timeslot
+            #Add to rm_historic
+            Connection.addhisto(map)
+
         else:
-            #print("Mail.alertOpenning(map)")
-            pass
+            print('Mail')
+            Mail.alertOpenning(map)  #TODO Retirer le commentaire.
+            map["hi_takenrespected"] = "0"
+            map["TimeSlot"] = "Erreur d ouverture"
 
-
-
-def check(numCom):
-    #Récupérer l'heure + le jour
-    if(Connection.checkHour(numCom)):
-        print("Add to Historique")
-    else:
-        Mail.alertOpenning(numCom)
+            print("map ->")
+            print(map)
+            print("--------------")
+            Connection.addhisto(map)
 
 
 
