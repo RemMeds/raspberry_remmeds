@@ -1,20 +1,40 @@
+#!/usr/bin/python
+# coding=utf-8
+
+
 import MySQLdb
 import datetime
 import requests
-import ReplaceDataApi
+import ReplaceData
 import socket #test internet connection
 import datetime
 
 #list = map(key, value)
-def addhisto(data, userID):
+def addhisto(data):
+    print("HISTORIQUE")
     dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
     cursorLocal = dbLocal.cursor()
 
+    date = datetime.datetime.now()
+    print(data)
+    print("--------------")
+    day = ReplaceData.replace(str(date.day),"num")
+    month = ReplaceData.replace(str(date.month),"num")
+    date = str(day) + "-" + str(month) + "-" + str(date.year)
+
+    cursorLocal.execute("select com_name from rm_compartment where com_num = " + str(data["Comp"]))
+    drugName = cursorLocal.fetchone()
+    drugName = drugName[0]
+
     cursorLocal.execute("insert into rm_historic (us_id, hi_drugname, hi_hours, hi_day,"
-                        "hi_takenrespected)"
-                        "values ('" + str(data["us_id"]) + "','" + str(data["hi_drugname"]) + "','" + str(data["hi_hours"]) + "',"
-                        "'" + str(data["hi_day"]) + "','" + str(data["hi_takenrespected"]) + "');")
+                        "hi_takenrespected, hi_num_comp, hi_time_slot)"
+                        "values ('" + str(selectUserID()) + "','" + drugName + "','" + str(data["Hour"]) + "',"
+                        "'" + str(date) + "','" + str(data["hi_takenrespected"]) + "','" + str(data["Comp"]) + "',"
+                        "'" + str(data["TimeSlot"]) + "');")
     dbLocal.commit()
+
+    print("Local OK")
+    print("--------------")
 
     #Check si on est connecte a internet
     try:
@@ -36,17 +56,16 @@ def addhisto(data, userID):
         #For each line in historic
         for row in data:
             #Envoyer les donnees a l'API.
-            #print(row[1])
-            requests.post("http://212.73.217.202:15020/raspberry/add_historic/"+str(row[1])+"&"+str(row[2])+"&"+str(row[3])+"&"
-                          ""+str(row[4])+"&"+str(row[5])+"")
+            print("http://212.73.217.202:15020/historic/add_historic/"+str(row[1])+"&"+str(row[2])+"&"+str(row[3])+"&"
+                          ""+str(row[4])+"&"+str(row[5])+"&"+str(row[6])+"&"+str(row[7])+"")
+            requests.post("http://212.73.217.202:15020/historic/add_historic/"+str(row[1])+"&"+str(row[2])+"&"+str(row[3])+"&"
+                          ""+str(row[4])+"&"+str(row[5])+"&"+str(row[6])+"&"+str(row[7])+"")
 
 
         #Supprimer les donnees historique de la bdd locale pour eviter les doublons.
         cursorLocal.execute("DELETE FROM rm_historic;")
         dbLocal.commit()
 
-        #Lancer une nouvelle synchronisation
-        synchroBDD(userID)
     dbLocal.close()
 
 
@@ -58,7 +77,7 @@ def sameData(data, map):
     #print(map['ID'])
     for i in data:
         #print(data[i])
-        slt = ReplaceDataApi.replace(i, map['table'])
+        slt = ReplaceData.replace(i, map['table'])
 
         #print("select "+str(slt)+" from  "+map['table']+" where "+map['cdt']+" = " + str(map['ID'])+";")
 
@@ -258,19 +277,12 @@ def resetBDD():
 
 def checkHour(numComp):
     date = datetime.datetime.now()
-    hour = str(date.hour) # + ":" + str(date.minute)
+    hour = str(date.hour) + ":" + str(date.minute)
     dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
     cursor = dbLocal.cursor()
 
     numComp = str(numComp)
-    cursor.execute("select com_id from rm_compartment where com_num = " + numComp)
-
-    idComp = cursor.fetchone()
-
-    idComp = str(idComp[0])
-
-    cursor.execute("select cpe_hour from rm_comp_preset where com_id = " + idComp)
-
+    cursor.execute("select com_hour from rm_compartment where com_num = " + numComp)
 
     result = cursor.fetchall()
     bool = False
@@ -290,26 +302,116 @@ def checkHour(numComp):
 
 
 def checkComp():
+    print("CheckComp")
+    print("------------------------------------------")
+
     map = {}
+    result = False
     for numComp in range(1,9):
         dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
         cursor = dbLocal.cursor()
-
-        cursor.execute("select com_hour from rm_compartment where com_num = " + str(numComp))
-        comHour = cursor.fetchone()
-        comHour = comHour[0]
-
-        time = datetime.datetime.now()
-        date = str(time.hour) + ":" + str(ReplaceDataApi.replace(str(time.minute), "num"))
-
-        if(date == comHour):
-            map["Hour"] = date
-            map["Comp"] = numComp
-            return map
+        print("------------------------------------------")
+        print("Numero du compartiment")
+        print(numComp)
 
 
+        #Récupérer le jour de la semaine.
+        day = ReplaceData.days(str(datetime.datetime.today().weekday()))
+
+        #Récuéprer tous les jours ou l'utilisateur devra prendre le médicament du compartiement i
+        cursor.execute("select com_days from rm_compartment where com_num = " + str(numComp))
+        comDays = cursor.fetchone()
+
+        print("Tous les jours de la semaine")
+        print(comDays)
+        print("Du compartiment")
+        print(numComp)
+
+        if(comDays): #Or '0' ?
+            comDays = comDays[0]
+            print("ELIF")
+            print(comDays)
+            if(comDays == "0" or comDays == ""):
+                print("It must be True")
+                result = True
+            else:
+                list = comDays.split(",")
+                for i in list:
+                    if(str(i) == day):
+                        print("OK")
+                        result = True
+        else:
+            result = True
+
+        if(result):
+            print("result = true")
+            result = False
+            time = datetime.datetime.now()
+            minute = str(time.minute)
+            hour = str(time.hour)
+
+            minute = ReplaceData.replace(minute, "num")
+            hour = ReplaceData.replace(hour, "num")
+            date = hour + ":" + minute
+
+            #Heure perso
+            cursor.execute("select com_hour from rm_compartment where com_num = " + str(numComp))
+            comHour = cursor.fetchone()
+            print(comHour)
+            if(comHour):
+                print("if")
+                comHour = comHour[0]
+
+                if(date == comHour):
+                    map["Hour"] = date
+                    map["Comp"] = numComp
+                    map["TimeSlot"] = "Perso"
+                    return map #C'est pour le moment qu'a condition que l'utilisateur doit prendre qu'un seul médicament
+                                # Il ne peut en prendre deux à la même heure a la même minute. #TODO gérer cela
+
+            #Heure Petit dej / dej / diner / couché
+            cursor.execute("select com_list_pref from rm_compartment where com_num = " + str(numComp))
+            comListPref = cursor.fetchone()
+            comListPref = comListPref[0]
+            list = comListPref.split(",")
+            pref = ""
+            for i in list:
+                if(i == "Breakfast"):
+                    pref = "us_prefbreakfast"
+                    map["TimeSlot"] = str(i)
+                elif(i == "Lunch"):
+                    pref = "us_preflunch"
+                    map["TimeSlot"] = str(i)
+                elif(i == "Dinner"):
+                    pref = "us_prefdinner"
+                    map["TimeSlot"] = str(i)
+                else:
+                    pref = "us_prefbedtime"
+                    map["TimeSlot"] = str(i)
+
+                cursor.execute("select "+str(pref)+" from rm_user")
+                comHour = cursor.fetchone()
+                comHour = comHour[0]
+
+                if(date == comHour):
+                    map["Hour"] = date
+                    map["Comp"] = numComp
+                    return map #C'est pour le moment qu'a condition que l'utilisateur doit prendre qu'un seul médicament
+                                # Il ne peut en prendre deux à la même heure a la même minute. #TODO gérer cela
 
 
+
+def selectUserID():
+    db = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
+    cursor = db.cursor()
+
+    #print("checkIfExists")
+
+    cursor.execute("select us_id from rm_user")
+    data = cursor.fetchone()
+    user = data[0]
+    print(user)
+    return user
 
 
 #print(resetBDD())
@@ -317,18 +419,18 @@ def checkComp():
 #print(synchroBDD(1))
 
 
-
 """
+
 liste1 = {}
 
 liste1["us_id"] = 1
-liste1["hi_drugname"] = "doli"
-liste1["hi_hours"] = "11:00"
+liste1["Hour"] = "11:00"
 liste1["hi_takenrespected"] = 1
-liste1["hi_day"] = "lundi"
+liste1["hi_day"] = "15-04-2018"
+liste1["Comp"] = 2
+liste1["TimeSlot"] = "Perso"
 
 
-print(addhisto(liste1, 1))
+print(addhisto(liste1))
 """
 
-checkComp()
