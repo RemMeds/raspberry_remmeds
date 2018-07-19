@@ -4,15 +4,11 @@
 # Les modules necessaires sont importes et mis en place
 import RPi.GPIO as GPIO
 import time
-import Connection
-import ReplaceData
-import Mail
+import connection
+import replace_data
+import mail
 import MySQLdb
 import os
-
-"""
-Déclaration de la variable d'environnement
-"""
 
 
 """
@@ -30,23 +26,23 @@ def ledOn(map):
 
     #hour = map["Hour"]
     comp = map["Comp"]
-    pin = ReplaceData.comToPin(str(comp))
+    pin = replace_data.comToPin(str(comp))
     pin = int(pin)
 
     #active led light for 30 minutes
     GPIO.setup(pin, GPIO.OUT)
-    #print("LED on")
+    #led on
     GPIO.output(pin, GPIO.LOW)
     time.sleep(30)  #1800 Timer 30 minutes In seconds
 
-    #Une fois la demi heure passé, on vérifie l'état de la pin.
+    #Once half an hour has passed, check the condition of the pine
     state = GPIO.input(pin)
+    #if led is on
     if(state == 0):
-        Mail.alertMissing(map) #TODO Retirer le commentaire.
+        mail.alertMissing(map)
         map["hi_takenrespected"] = "0"
-        Connection.addhisto(map)
-
-
+        connection.addhisto(map)
+    #led off
     ledOff(map)
 
 
@@ -56,7 +52,7 @@ def ledOff(map):
     GPIO.setwarnings(False)
 
     comp = map["Comp"]
-    pin = ReplaceData.comToPin(str(comp))
+    pin = replace_data.comToPin(str(comp))
     pin = int(pin)
 
     GPIO.setup(pin, GPIO.OUT)
@@ -75,7 +71,7 @@ def led(map):
         GPIO.setwarnings(False)
 
         comp = map["Comp"]
-        pin = ReplaceData.comToPin(str(comp))
+        pin = replace_data.comToPin(str(comp))
         pin = int(pin)
 
         GPIO.setup(pin, GPIO.OUT)
@@ -133,40 +129,15 @@ def led(map):
                             map["TimeSlot"] = "Bedtime"
             #end retrieve timeslot
             #Add to rm_historic
-            Connection.addhisto(map)
+            connection.addhisto(map)
 
         else:
             print('Mail')
-            Mail.alertOpenning(map)  #TODO Retirer le commentaire.
+            mail.alertOpenning(map)
             map["hi_takenrespected"] = "0"
             map["TimeSlot"] = "Erreur d ouverture"
 
             print("map ->")
             print(map)
             print("--------------")
-            Connection.addhisto(map)
-
-
-
-"""
-list = {}
-list["Hour"] = "20:26"
-list["Comp"] = "1"
-list["call"] = "Main"
-
-params[list["Comp"]] = True
-
-
-ledOn(list)
-"""
-
-"""
-#LEDOFF
-list = {}
-list["Comp"] = "1"
-ledOff(list)
-
-
-list["Comp"] = "2"
-ledOff(list)
-"""
+            connection.addhisto(map)

@@ -13,7 +13,7 @@ def mail(message, subject, To):
 
     # setup the parameters of the message
     password = "@azerty$"
-    msg['From'] = "RemMeds@outlook.fr"
+    msg['From'] = "projet.remmeds@gmail.com" #RemMeds@outlook.fr #remmeds@yahoo.com #projet.remmeds@gmail.com
     msg['To'] = str(To)
     msg['Subject'] = str(subject) # L'objet du mail
 
@@ -21,7 +21,7 @@ def mail(message, subject, To):
     msg.attach(MIMEText(message, 'plain'))
 
     # create server
-    server = smtplib.SMTP('smtp-mail.outlook.com: 587')
+    server = smtplib.SMTP('smtp.gmail.com: 587') #smtp-mail.outlook.com: 587 #smtp.mail.yahoo.com: 587 #smtp.gmail.com: 465
 
     server.starttls()
 
@@ -89,7 +89,7 @@ def alertMissing(list):
         print(reMail)
 
         message = "Bonjour "+str(reName)+", \n\n" \
-                  ""+str(userName)+" à oublie de prendre le medicament "+str(drugName[0])+" qu'il devait prendre à "+str(list["Hour"])
+                  ""+str(userName)+" a oublie de prendre le medicament "+str(drugName[0])+" qu'il devait prendre a "+str(list["Hour"])
         #le corps du message pour l'utilisateur.
 
         mail(message, "Alerte ! Medicament oublie", reMail)
@@ -115,7 +115,7 @@ def alertOpenning(list):
 
     #le corps du message pour l'utilisateur.
 
-    mail(message, "Alerte ! Compartiement ouvert", userMail)
+    mail(message, "Alerte ! Compartiment ouvert", userMail)
 
     #For contacts
     cursor.execute("select re_firstname, re_mail from rm_repertory")
@@ -129,4 +129,4 @@ def alertOpenning(list):
                   "en dehors des heures de prises conseillées par le médecin."
         #le corps du message pour l'utilisateur.
 
-        mail(message, "Alerte ! Compartiement ouvert", reMail)
+        mail(message, "Alerte ! Compartiment ouvert", reMail)

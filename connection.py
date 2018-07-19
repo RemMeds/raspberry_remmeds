@@ -5,7 +5,7 @@
 import MySQLdb
 import datetime
 import requests
-import ReplaceData
+import replace_data
 import socket #test internet connection
 import datetime
 
@@ -18,8 +18,8 @@ def addhisto(data):
     date = datetime.datetime.now()
     print(data)
     print("--------------")
-    day = ReplaceData.replace(str(date.day),"num")
-    month = ReplaceData.replace(str(date.month),"num")
+    day = replace_data.replace(str(date.day), "num")
+    month = replace_data.replace(str(date.month), "num")
     date = str(day) + "-" + str(month) + "-" + str(date.year)
 
     cursorLocal.execute("select com_name from rm_compartment where com_num = " + str(data["Comp"]))
@@ -77,7 +77,7 @@ def sameData(data, map):
     #print(map['ID'])
     for i in data:
         #print(data[i])
-        slt = ReplaceData.replace(i, map['table'])
+        slt = replace_data.replace(i, map['table'])
 
         #print("select "+str(slt)+" from  "+map['table']+" where "+map['cdt']+" = " + str(map['ID'])+";")
 
@@ -275,97 +275,73 @@ def resetBDD():
     return "RESET";
 
 
-def checkHour(numComp):
-    date = datetime.datetime.now()
-    hour = str(date.hour) + ":" + str(date.minute)
-    dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
-    cursor = dbLocal.cursor()
-
-    numComp = str(numComp)
-    cursor.execute("select com_hour from rm_compartment where com_num = " + numComp)
-
-    result = cursor.fetchall()
-    bool = False
-
-    for row in result:
-        row = row[0]
-        print(row)
-        if(row == hour):
-            bool = True
-            break
-
-    if(bool):
-        return True
-    else:
-        return False
-
-
-
 def checkComp():
-    print("CheckComp")
-    print("------------------------------------------")
+    #print("CheckComp")
+    #print("------------------------------------------")
 
     map = {}
     result = False
     for numComp in range(1,9):
         dbLocal = MySQLdb.connect("localhost", "usrRemMeds", "azerty", "remmeds")
         cursor = dbLocal.cursor()
+        """
         print("------------------------------------------")
         print("Numero du compartiment")
         print(numComp)
-
+        """
 
         #Récupérer le jour de la semaine.
-        day = ReplaceData.days(str(datetime.datetime.today().weekday()))
+        day = replace_data.days(str(datetime.datetime.today().weekday()))
 
         #Récuéprer tous les jours ou l'utilisateur devra prendre le médicament du compartiement i
         cursor.execute("select com_days from rm_compartment where com_num = " + str(numComp))
         comDays = cursor.fetchone()
-
+        """
         print("Tous les jours de la semaine")
         print(comDays)
         print("Du compartiment")
         print(numComp)
-
+        """
         if(comDays): #Or '0' ?
             comDays = comDays[0]
-            print("ELIF")
-            print(comDays)
+            #print("ELIF")
+            #print(comDays)
             if(comDays == "0" or comDays == ""):
-                print("It must be True")
+                #print("It must be True")
                 result = True
             else:
                 list = comDays.split(",")
                 for i in list:
                     if(str(i) == day):
-                        print("OK")
+                        #print("OK")
                         result = True
         else:
             result = True
 
         if(result):
-            print("result = true")
+            #print("result = true")
             result = False
             time = datetime.datetime.now()
             minute = str(time.minute)
             hour = str(time.hour)
 
-            minute = ReplaceData.replace(minute, "num")
-            hour = ReplaceData.replace(hour, "num")
+            minute = replace_data.replace(minute, "num")
+            hour = replace_data.replace(hour, "num")
             date = hour + ":" + minute
 
             #Heure perso
             cursor.execute("select com_hour from rm_compartment where com_num = " + str(numComp))
             comHour = cursor.fetchone()
-            print(comHour)
+            #print(comHour)
             if(comHour):
-                print("if")
+                #print("if")
                 comHour = comHour[0]
 
                 if(date == comHour):
                     map["Hour"] = date
                     map["Comp"] = numComp
                     map["TimeSlot"] = "Perso"
+                    print(map)
                     return map #C'est pour le moment qu'a condition que l'utilisateur doit prendre qu'un seul médicament
                                 # Il ne peut en prendre deux à la même heure a la même minute. #TODO gérer cela
 
@@ -396,6 +372,7 @@ def checkComp():
                 if(date == comHour):
                     map["Hour"] = date
                     map["Comp"] = numComp
+                    print(map)
                     return map #C'est pour le moment qu'a condition que l'utilisateur doit prendre qu'un seul médicament
                                 # Il ne peut en prendre deux à la même heure a la même minute. #TODO gérer cela
 

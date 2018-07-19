@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import Connection
+import connection
 import os
 import datetime
-import Mail
-import Pill
-import ReplaceData
+import mail
+import pill
+import replace_data
 
 file = open("/remmeds/log.txt", "a")
 date = datetime.datetime.now()
@@ -15,26 +15,26 @@ date = datetime.datetime.now()
 
 
 #Synchro des bdd
-userID = Connection.selectUserID() #Vérifier si il y'a un user en récupérant son id
+userID = connection.selectUserID() #Vérifier si il y'a un user en récupérant son id
 if(userID): #si la variable contient un id
     #print(userID)
-    Connection.synchroBDD(userID) #La synchro se lance.
+    connection.synchroBDD(userID) #La synchro se lance.
     file.write("\nUserID -> "+str(userID)) #Log
 
 
 
 
-compNum = Connection.checkComp()
+compNum = connection.checkComp()
 print(compNum)
 
 if(compNum):
-    Mail.infos(compNum) #TODO Retirer le commentaire
+    mail.infos(compNum)
     compNum["call"] = "Main"
     print("APPEL LED")
-    Pill.led(compNum)
+    pill.led(compNum)
 minute = str(date.minute)
 
-minute = ReplaceData.replace(minute, "num")
+minute = replace_data.replace(minute, "num")
 
 file.write("\nlog hour " + str(date.hour)+":"+minute +" --> "+str(compNum) + " Mail ")
 
