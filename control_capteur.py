@@ -6,8 +6,8 @@ import RPi.GPIO as GPIO
 import os
 import time
 import datetime
-import ReplaceData
-import Pill
+import replace_data
+import pill
 
 GPIO.setmode(GPIO.BCM)
 
@@ -26,14 +26,14 @@ def fonctionDeSortie(null):
 
     time = datetime.datetime.now()
     minute = str(time.minute)
-    minute = ReplaceData.replace(minute, "num")
+    minute = replace_data.replace(minute, "num")
     hour = str(time.hour) + ":" + minute
 
     list = {}
     list["Hour"] = hour
     list["Comp"] = "1"
     list["call"] = ""
-    Pill.led(list)
+    pill.led(list)
 
 
 
@@ -44,14 +44,14 @@ def fonctionDeSortie2(null):
 
     time = datetime.datetime.now()
     minute = str(time.minute)
-    minute = ReplaceData.replace(minute, "num")
+    minute = replace_data.replace(minute, "num")
     hour = str(time.hour) + ":" + minute
 
     list = {}
     list["Hour"] = hour
     list["Comp"] = "2"
     list["call"] = ""
-    Pill.led(list)
+    pill.led(list)
 
 
 # Lors de la detection d'un signal (front descendant du signal) de la fonction de sortie est declenchee

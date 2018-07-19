@@ -110,9 +110,6 @@ def comToPin(comp):
     if comp == "8":
         return ""
 
-def environ(num):
-    pass
-
 def days(day):
     if day == "0":
         return "Lundi"
